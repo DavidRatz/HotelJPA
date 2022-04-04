@@ -1,6 +1,7 @@
 package bstorm.akimts.correction_jpa.metier.service;
 
 import bstorm.akimts.correction_jpa.data.repo.GerantRepository;
+import bstorm.akimts.correction_jpa.exception.ElementNotFoundException;
 import bstorm.akimts.correction_jpa.metier.mapper.GerantMapper;
 import bstorm.akimts.correction_jpa.models.dtos.GerantDTO;
 import bstorm.akimts.correction_jpa.models.entities.Gerant;
@@ -29,21 +30,36 @@ public class GerantServiceImpl implements GerantService{
 
     @Override
     public GerantDTO getOne(Long id) {
-        return null;
+        return repository.findById(id)
+                    .map(mapper::entityToDTO)
+                    .orElseThrow(() -> new ElementNotFoundException(id, Gerant.class));
     }
 
     @Override
     public List<GerantDTO> getAll() {
-        return null;
+        return repository.findAll()
+            .stream()
+            .map(mapper::entityToDTO)
+            .toList();
     }
 
     @Override
     public GerantDTO update(Long id, GerantForm form) {
-        return null;
+        Gerant entity = repository.findById(id)
+                            .orElseThrow(() -> new ElementNotFoundException(id, GerantDTO.class));   
+        entity.setNom(form.getNom());
+        entity.setPrenom(form.getPrenom());
+        entity.setDebutCarriere(form.getDebutCarriere());
+
+        entity = repository.save(entity);
+
+        return mapper.entityToDTO(entity);
     }
 
     @Override
     public GerantDTO delete(Long id) {
-        return null;
+        GerantDTO dto = getOne(id);
+        repository.deleteById(id);
+        return dto;
     }
 }
